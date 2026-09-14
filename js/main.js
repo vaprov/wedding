@@ -153,9 +153,15 @@
     align();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(align);
     addEventListener('load', align);
-    var t, later = function () { clearTimeout(t); t = setTimeout(align, 120); };
+    /* пересчёт только при смене ширины: в Safari при прокрутке прячется
+       адресная строка, меняется высота окна — и выравнивание дёргало раскладку */
+    var t, w = text.parentNode.parentNode.clientWidth;
+    var later = function () {
+      var nw = text.parentNode.parentNode.clientWidth;
+      if (nw === w) return;
+      w = nw; clearTimeout(t); t = setTimeout(align, 120);
+    };
     addEventListener('resize', later);
-    /* смена ширины колонки (поворот телефона, изменение окна) */
     if ('ResizeObserver' in window) new ResizeObserver(later).observe(text.parentNode.parentNode);
   })();
 
@@ -234,7 +240,11 @@
     var nav = $('#nav'), burger = $('#navBurger'), links = $$('#navMenu a');
     if (!nav) return;
 
-    var onScroll = function () { nav.classList.toggle('is-stuck', scrollY > 60); };
+    var stuck = null;
+    var onScroll = function () {
+      var s = scrollY > 60;
+      if (s !== stuck) { stuck = s; nav.classList.toggle('is-stuck', s); }
+    };
     onScroll();
     addEventListener('scroll', onScroll, { passive: true });
 
@@ -256,15 +266,26 @@
       return { link: a, el: $(a.getAttribute('href')) };
     }).filter(function (x) { return x.el; });
 
+    /* позиции секций запоминаем заранее и обновляем только когда меняется
+       размер страницы — на каждом шаге прокрутки ничего не измеряем */
+    var tops = [], pageH = 0;
+    function measure() {
+      tops = sections.map(function (x) { return x.el.offsetTop; });
+      pageH = document.body.scrollHeight;
+    }
+    measure();
+    addEventListener('load', measure);
+    if ('ResizeObserver' in window) new ResizeObserver(function () { measure(); markActive(); }).observe(document.body);
+
     var currentId = null;
     function markActive() {
       var line = scrollY + innerHeight * 0.35;
       var found = sections[0];
-      sections.forEach(function (x) {
-        if (x.el.offsetTop <= line) found = x;
+      sections.forEach(function (x, i) {
+        if (tops[i] <= line) found = x;
       });
       /* у самого низа страницы подсвечиваем последнюю секцию */
-      if (scrollY + innerHeight >= document.body.scrollHeight - 4) found = sections[sections.length - 1];
+      if (scrollY + innerHeight >= pageH - 4) found = sections[sections.length - 1];
       if (!found || found.el.id === currentId) return;
       currentId = found.el.id;
       sections.forEach(function (x) { x.link.classList.toggle('is-active', x === found); });
@@ -272,7 +293,7 @@
     if (sections.length) {
       markActive();
       addEventListener('scroll', markActive, { passive: true });
-      addEventListener('resize', markActive);
+      addEventListener('resize', function () { measure(); markActive(); });
     }
   })();
 
@@ -582,16 +603,20 @@
 
         var navH = (($('#nav') || {}).offsetHeight || 0) + 16;
         var top = box.getBoundingClientRect().top + scrollY - navH;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+        window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
       }, touch ? 420 : 320);                  // на телефоне ждём, пока уедет клавиатура
     });
   })();
 
   /* ─────────── 13b. «ЗАПЛАНИРОВАТЬ» — В КАЛЕНДАРЬ УСТРОЙСТВА ─────────── */
-  /* iPhone, Mac, Windows: ссылка ведёт на assets/wedding.ics — система сама
-     открывает календарь по умолчанию с готовым событием.
-     Android: .ics там обычно просто скачивается, поэтому открываем
-     Google Календарь — он стоит по умолчанию на большинстве устройств. */
+  /* iPhone / iPad: обычная ссылка на .ics открывает карточку события внутри
+     Safari, а событие попадает в «календарь по умолчанию», который часто скрыт.
+     Поэтому открываем приложение «Календарь» напрямую (webcal://) — оно
+     предлагает добавить отдельный календарь «Матвей & Самира», и событие сразу
+     видно. Если приложение не открылось (например, встроенный браузер
+     мессенджера не пускает такие ссылки) — через пару секунд откроем .ics.
+     Android: .ics там обычно просто скачивается — открываем Google Календарь.
+     Компьютеры: скачивается .ics и открывается в календаре системы. */
   (function calendar() {
     var btn = $('#addToCalendar');
     if (!btn) return;
@@ -600,16 +625,37 @@
       start:    '20261024T083000Z',   // 11:30 по Москве
       end:      '20261024T120000Z',   // 15:00 по Москве
       location: 'Англиканская церковь Святого Андрея, Вознесенский пер., 8/5, Москва',
-      details:  'Карта: https://yandex.ru/maps/-/CTdBfW3r'
+      details:  'Сбор гостей в 11:30, венчание в 12:00.\nКарта: https://yandex.ru/maps/-/CTdBfW3r'
     };
+    var ua = navigator.userAgent;
+    var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    var isAndroid = /android/i.test(ua);
+
     btn.addEventListener('click', function (e) {
-      if (!/android/i.test(navigator.userAgent)) return;   // остальным — .ics
+      if (isAndroid) {
+        e.preventDefault();
+        location.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+          '&text='     + encodeURIComponent(EVENT.title) +
+          '&dates='    + EVENT.start + '/' + EVENT.end +
+          '&ctz=Europe/Moscow' +
+          '&location=' + encodeURIComponent(EVENT.location) +
+          '&details='  + encodeURIComponent(EVENT.details);
+        return;
+      }
+      if (!isIOS || location.protocol !== 'https:') return;   // локально webcal не сработает
+
       e.preventDefault();
-      location.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-        '&text='     + encodeURIComponent(EVENT.title) +
-        '&dates='    + EVENT.start + '/' + EVENT.end +
-        '&location=' + encodeURIComponent(EVENT.location) +
-        '&details='  + encodeURIComponent(EVENT.details);
+      var ics = btn.href;                                     // абсолютный https-адрес файла
+      var left = false;
+      var onHide = function () { if (document.hidden) left = true; };
+      document.addEventListener('visibilitychange', onHide);
+      addEventListener('pagehide', onHide);
+      addEventListener('blur', function () { left = true; }, { once: true });
+      location.href = ics.replace(/^https:/, 'webcal:');
+      setTimeout(function () {
+        document.removeEventListener('visibilitychange', onHide);
+        if (!left) location.href = ics;
+      }, 2000);
     });
   })();
 
