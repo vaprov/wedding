@@ -135,6 +135,30 @@
     });
   })();
 
+  /* ─────────── 3c. ОТСЫЛКА ПОД СТИХОМ ─────────── */
+  /* Строки стиха выровнены по длине (text-wrap: balance), поэтому блок шире
+     самой длинной строки. Отсылку сдвигаем так, чтобы она заканчивалась
+     ровно под правым краем текста, а не у края пустого блока. */
+  (function verseRef() {
+    var text = $('.verse__text'), ref = $('.verse__ref');
+    if (!text || !ref) return;
+    function align() {
+      ref.style.marginRight = '0px';
+      var rg = document.createRange(); rg.selectNodeContents(text);
+      var right = -Infinity;
+      [].forEach.call(rg.getClientRects(), function (r) { if (r.right > right) right = r.right; });
+      var gap = ref.getBoundingClientRect().right - right;
+      if (gap > 0) ref.style.marginRight = gap + 'px';
+    }
+    align();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(align);
+    addEventListener('load', align);
+    var t, later = function () { clearTimeout(t); t = setTimeout(align, 120); };
+    addEventListener('resize', later);
+    /* смена ширины колонки (поворот телефона, изменение окна) */
+    if ('ResizeObserver' in window) new ResizeObserver(later).observe(text.parentNode.parentNode);
+  })();
+
   /* ─────────── 4. ПОЯВЛЕНИЕ ПРИ ПРОКРУТКЕ ─────────── */
   /* Считаем положение блоков сами, а не через IntersectionObserver:
      наблюдатель молчит в скрытой вкладке и срабатывает раньше, чем нужно.
@@ -343,11 +367,26 @@
   })();
 
   /* ─────────── 11. РАСКРЫВАЮЩИЕСЯ БЛОКИ ─────────── */
-  /* высоту считаем по факту: блок с детьми растёт при добавлении полей */
-  function syncToggle(block) {
-    var body = $('.toggle-block__body', block);
-    if (!body) return;
-    body.style.maxHeight = block.classList.contains('is-open') ? body.scrollHeight + 'px' : '0px';
+  /* Анимируем высоту один раз, а по окончании снимаем ограничение (none):
+     дальше блок растёт вместе с содержимым сам, без повторных пересчётов,
+     которые на телефоне давали второй рывок. */
+  var touch = !finePointer;
+
+  function openBody(body) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    var done = function (e) {
+      if (e && e.target !== body) return;
+      body.removeEventListener('transitionend', done);
+      if (body.parentNode.classList.contains('is-open')) body.style.maxHeight = 'none';
+    };
+    body.addEventListener('transitionend', done);
+    setTimeout(done, 700);                          // страховка, если transitionend не придёт
+  }
+
+  function closeBody(body) {
+    body.style.maxHeight = body.scrollHeight + 'px'; // с «none» закрытие не анимируется
+    body.offsetHeight;
+    body.style.maxHeight = '0px';
   }
 
   (function toggles() {
@@ -358,18 +397,20 @@
 
       input.addEventListener('change', function () {
         block.classList.toggle('is-open', input.checked);
-        if (input.checked && block.dataset.onopen === 'kid' && !$('.kid', body)) addKid(false);
-        syncToggle(block);
         if (input.checked) {
-          var first = $('input[type="text"], input[type="number"]', body);
-          if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 260);
+          if (block.dataset.onopen === 'kid' && !$('.kid', body)) addKid(false);
+          openBody(body);
+          /* Фокус ставим только с мышью. На телефоне фокус открывает клавиатуру
+             посреди анимации, браузер прокручивает страницу к полю — это и был
+             главный рывок. Гость сам нажмёт на поле, когда блок раскроется. */
+          if (!touch) {
+            var first = $('input[type="text"], input[type="number"]', body);
+            if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 260);
+          }
+        } else {
+          closeBody(body);
         }
       });
-    });
-
-    /* при смене размеров окна пересчитываем открытые блоки */
-    addEventListener('resize', function () {
-      $$('.toggle-block.is-open').forEach(syncToggle);
     });
   })();
 
@@ -409,12 +450,7 @@
     list.appendChild(row);
     renumber();
 
-    var block = list.closest('.toggle-block');
-    syncToggle(block);
-    /* блок растёт вместе с анимацией появления строки */
-    setTimeout(function () { syncToggle(block); }, 320);
-
-    if (focus !== false) {
+    if (focus !== false && !touch) {
       var first = $('input', row);
       if (first) first.focus({ preventScroll: true });
     }
@@ -424,7 +460,6 @@
       setTimeout(function () {
         row.remove();
         renumber();
-        syncToggle(block);
       }, 360);
     });
   }
@@ -467,7 +502,15 @@
           { duration: 320, easing: 'ease-in-out' }
         );
       }
-      if (scroll) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+      if (scroll) {
+        /* клавиатура открыта — сначала убираем её, иначе прокрутка и
+           изменение высоты экрана дерутся друг с другом */
+        var wasFocused = touch && document.activeElement && document.activeElement.tagName === 'INPUT';
+        if (wasFocused) document.activeElement.blur();
+        setTimeout(function () {
+          el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+        }, wasFocused ? 350 : 0);
+      }
     }
 
     form.addEventListener('submit', function (e) {
@@ -521,19 +564,26 @@
 
       sendToSheet(data);
 
-      /* форма плавно схлопывается, галочка раздвигает заголовок и текст */
-      form.style.maxHeight = form.scrollHeight + 'px';
-      form.offsetHeight;                      // принудительный пересчёт
+      /* Раньше форма схлопывалась по высоте почти секунду, а поверх шла
+         плавная прокрутка: страница укорачивалась на ~900 px прямо под пальцем,
+         одновременно закрывалась клавиатура — отсюда рывки.
+         Теперь: убираем клавиатуру → форма гаснет на месте → одним кадром
+         меняем её на благодарность и ставим экран на начало блока. */
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      box.classList.add('is-leaving');
+
       setTimeout(function () {                // таймер, а не rAF: работает и в фоновой вкладке
         if (thanks) thanks.hidden = false;
         /* кнопка календаря — только тем, кто придёт или ещё решает */
         var cal = $('#rsvpCal');
         if (cal) cal.hidden = attend.value === 'no';
         box.classList.add('is-done');
-        setTimeout(function () {
-          box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
-        }, 260);
-      }, 20);
+        box.classList.remove('is-leaving');
+
+        var navH = (($('#nav') || {}).offsetHeight || 0) + 16;
+        var top = box.getBoundingClientRect().top + scrollY - navH;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+      }, touch ? 420 : 320);                  // на телефоне ждём, пока уедет клавиатура
     });
   })();
 
