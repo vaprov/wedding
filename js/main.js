@@ -171,7 +171,8 @@
      Блок начинает проявляться, когда его верх поднялся выше отметки
      TRIGGER от высоты экрана, то есть он уже заметно вошёл в кадр. */
   (function reveal() {
-    var TRIGGER = 0.78;
+    /* на телефоне блок начинает проявляться, едва показавшись снизу */
+    var TRIGGER = finePointer ? 0.78 : 0.94;
     var items = $$('[data-reveal]').filter(function (el) { return !el.closest('.hero'); });
     if (!items.length) return;
 
