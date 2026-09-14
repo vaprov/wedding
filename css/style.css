@@ -230,7 +230,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   text-align:center; row-gap:clamp(12px,2.2vh,24px);
 }
 .hero__content{ max-width:900px; align-self:center; }
-.hero__eyebrow{ font-family:var(--font-ui); font-weight:500; font-size:clamp(10px,2.6vw,11px); letter-spacing:.34em; text-transform:uppercase; color:var(--olive); margin:0 0 clamp(14px,2.6vh,28px); }
+.hero__eyebrow{ font-family:var(--font-ui); font-weight:500; font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--olive); margin:0 0 clamp(14px,2.6vh,28px); }
 .hero__names{
   font-family:var(--font-display); font-weight:300;
   font-size:clamp(42px,min(9.2vw,13.5vh),126px); line-height:1; margin:0; color:var(--burgundy-deep);
@@ -250,7 +250,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   font-family:var(--font-ui);
   display:flex; align-items:center; justify-content:center; flex-wrap:wrap;
   gap:clamp(8px,2vw,22px); margin:clamp(18px,3.4vh,34px) 0 10px;
-  font-size:clamp(11px,2.4vw,12px); letter-spacing:.3em; text-transform:uppercase; color:var(--ink-soft);
+  font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-soft);
 }
 .hero__date-div{ width:clamp(20px,5vw,34px); height:1px; background:var(--olive-soft); }
 .hero__city{ font-family:var(--font-display); font-style:italic; font-size:clamp(16px,3.2vw,20px); color:var(--olive); margin:0 0 clamp(20px,3.6vh,36px); }
@@ -258,7 +258,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .hero__scroll{
   font-family:var(--font-ui);
   align-self:end; display:grid; justify-items:center; gap:10px;
-  font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:var(--olive);
+  font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--olive);
 }
 .hero__scroll-line{ width:1px; height:clamp(20px,3.4vh,36px); background:var(--olive-pale); overflow:hidden; }
 .hero__scroll-line i{ display:block; width:1px; height:18px; background:var(--burgundy); animation:scrollrun 2.2s var(--ease) infinite; }
@@ -273,7 +273,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .countdown{ display:flex; justify-content:center; gap:clamp(12px,3.5vw,46px); margin-top:clamp(30px,6vh,60px); }
 .countdown__item{ display:grid; gap:4px; min-width:56px; }
 .countdown__item b{ font-family:var(--font-display); font-weight:400; font-size:clamp(30px,6.4vw,52px); line-height:1; color:var(--burgundy); }
-.countdown__item span{ font-family:var(--font-ui); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--olive); }
+.countdown__item span{ font-family:var(--font-ui); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--olive); }
 
 /* ---------- 13. НАША ИСТОРИЯ ---------- */
 /* текст под карточками */
@@ -291,8 +291,10 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   font-size:clamp(19px,1.9vw,24px); line-height:1.6;
   color:var(--burgundy-deep);
 }
-.scripture__ref{
-  margin-top:14px; text-align:right;
+.scripture__ref{ margin-top:14px; text-align:right; }
+
+/* ссылка на место из Библии — один стиль для всех цитат */
+.bible-ref{
   font-family:var(--font-ui); font-weight:500;
   font-size:11px; letter-spacing:.28em; text-transform:uppercase;
   color:var(--olive);
@@ -313,12 +315,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   font-size:clamp(26px,3.3vw,44px); line-height:1.22;
   max-width:26em;
 }
-.verse__ref{
-  margin:0; text-align:right;
-  font-family:var(--font-ui); font-weight:500;
-  font-size:11px; letter-spacing:.28em; text-transform:uppercase;
-  color:var(--olive);
-}
+.verse__ref{ margin:0; text-align:right; }
 .cultures{
   display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
   gap:clamp(16px,3vw,44px); margin-top:clamp(32px,6vh,64px);
@@ -362,7 +359,6 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 }
 .timing__time{ font-family:var(--font-display); font-size:clamp(26px,3.2vw,40px); line-height:1; color:var(--burgundy); transition:color .5s var(--ease); }
 .timing__body h3{ font-family:var(--font-display); font-weight:400; font-size:clamp(19px,2vw,26px); margin:0 0 .2em; color:var(--ink); transition:color .5s var(--ease); }
-.timing__body p{ margin:0; color:var(--ink-soft); font-size:clamp(14px,1.3vw,16px); transition:color .5s var(--ease); }
 .timing__icon{ color:var(--olive); width:clamp(44px,4vw,54px); justify-self:end; transition:color .5s var(--ease),transform .6s var(--ease); }
 .timing__icon svg,.timing__icon img{ width:100%; height:auto; display:block; }
 /* иконки — картинки, цвет им не сменить: при заливке строки бордовым
@@ -380,9 +376,9 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 
 /* ---------- 15. МЕСТО + КАРТА ---------- */
 .place{ display:grid; grid-template-columns:1fr 1fr; gap:clamp(26px,5vw,72px); align-items:center; }
-/* Общая колонка значений: её ширину задаёт самое длинное однострочное
-   значение (название церкви), а длинный текст парковки переносится
-   внутри неё и не выходит левее остальных. */
+/* Общая колонка значений: её ширину задаёт самое длинное значение,
+   все значения начинаются от одной линии. Если места мало (узкое окно),
+   колонка сужается и текст переносится. */
 .place__list{
   list-style:none; margin:22px 0 0; padding:0;
   display:grid; grid-template-columns:1fr auto; column-gap:18px;
@@ -391,11 +387,8 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   display:grid; grid-column:1 / -1; grid-template-columns:subgrid;
   align-items:baseline; padding:13px 0; border-bottom:1px dashed var(--cream-3);
 }
-/* contain:inline-size — длинный текст не расширяет колонку,
-   а растягивается на её ширину и переносится внутри */
-.place__wrap b{ contain:inline-size; }
-.place__list span{ font-family:var(--font-ui); font-weight:500; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--olive); flex:0 0 auto; }
-.place__list b{ font-family:var(--font-display); font-weight:400; font-size:clamp(16px,1.7vw,21px); line-height:1.35; color:var(--burgundy-deep); text-align:right; min-width:0; }
+.place__list span{ font-family:var(--font-ui); font-weight:500; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--olive); flex:0 0 auto; }
+.place__list b{ font-family:var(--font-display); font-weight:400; font-size:clamp(16px,1.36vw,19.5px); line-height:1.35; color:var(--burgundy-deep); text-align:right; min-width:0; }
 
 .place__map-frame{
   position:relative; aspect-ratio:4/5; overflow:hidden; isolation:isolate;
@@ -456,7 +449,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   font-family:var(--font-ui);
   position:absolute; left:0; right:0; bottom:0;
   padding:16px; text-align:center;
-  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  font-size:11.5px; letter-spacing:.18em; text-transform:uppercase;
   color:var(--cream); background:rgba(107,26,43,.92);
   transform:translateY(101%); transition:transform .55s var(--ease);
 }
@@ -470,7 +463,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .place__map-credit{
   font-family:var(--font-ui);
   margin:10px 0 0; text-align:right;
-  font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
   color:var(--olive); opacity:.6;
 }
 
@@ -483,7 +476,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   transition:transform .6s var(--ease),box-shadow .6s var(--ease);
 }
 .palette__item:hover span{ transform:translateY(-8px) scale(1.06); box-shadow:0 18px 32px -16px rgba(74,16,32,.55); }
-.palette__item b{ font-family:var(--font-ui); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; font-weight:500; color:var(--ink-soft); }
+.palette__item b{ font-family:var(--font-ui); font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:500; color:var(--ink-soft); }
 
 /* ---------- 17. КНОПКИ ---------- */
 .btn{
@@ -501,7 +494,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .btn:active{ transform:scale(.98); }
 .btn--wide{ width:100%; margin-top:12px; }
 .btn--add{
-  border:1px dashed var(--olive); color:var(--olive); min-height:48px; padding:12px 24px; font-size:11px;
+  border:1px dashed var(--olive); color:var(--olive); min-height:48px; padding:12px 24px;
   transition:background .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),transform .4s var(--ease);
 }
 .btn--add:hover{ background:var(--olive); color:var(--cream); border-style:solid; }
@@ -589,7 +582,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .choice.has-error .choice__error{ max-height:40px; opacity:1; margin-top:8px; }
 
 .choice{ border:0; padding:0; margin:0; min-width:0; }
-.choice__legend{ font-family:var(--font-ui); font-weight:500; font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--olive); margin-bottom:14px; padding:0; }
+.choice__legend{ font-family:var(--font-ui); font-weight:500; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--olive); margin-bottom:14px; padding:0; }
 .choice.has-error .choice__legend{ color:var(--burgundy-soft); }
 .choice__grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .choice__opt{
@@ -606,7 +599,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .choice__opt:has(input:checked){ border-color:var(--burgundy); background:rgba(107,26,43,.045); }
 .choice__opt input:focus-visible ~ .choice__box{ box-shadow:0 0 0 3px rgba(110,116,72,.25); }
 .choice.has-error .choice__opt{ border-color:rgba(140,43,61,.35); }
-.choice__txt{ font-size:14px; color:var(--ink-soft); }
+.choice__txt{ font-size:15px; color:var(--ink-soft); }
 
 /* раскрывающиеся блоки */
 .toggle-block{ display:grid; }
@@ -621,7 +614,7 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .checkline input:checked ~ .checkline__box{ background:var(--burgundy); border-color:var(--burgundy); }
 .checkline input:checked ~ .checkline__box svg{ opacity:1; transform:none; }
 .checkline input:focus-visible ~ .checkline__box{ box-shadow:0 0 0 3px rgba(110,116,72,.25); }
-.checkline__txt{ font-size:14.5px; color:var(--ink-soft); transition:color .4s var(--ease); }
+.checkline__txt{ font-size:15px; color:var(--ink-soft); transition:color .4s var(--ease); }
 .checkline:hover .checkline__txt{ color:var(--burgundy); }
 
 .toggle-block__body{
@@ -714,17 +707,18 @@ button{ font:inherit; color:inherit; background:none; border:0; }
   .countdown__item{ min-width:0; }
   .place__list{ display:block; }
   .place__list li{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
-  .place__list b, .place__wrap b{ text-align:left; contain:none; }
+  .place__list b{ text-align:left; }
   .btn{ padding:15px 24px; }
+  /* тот же размер, что у остальных подписей; разрядка чуть меньше, чтобы фраза влезла в строку */
+  .hero__eyebrow{ letter-spacing:.24em; }
+  /* ссылки на Библию заметно мельче подписей разделов, чтобы не читались как подзаголовок */
+  .bible-ref{ font-size:9.5px; letter-spacing:.2em; }
 }
-/* Телефон: заголовок-стих и две фразы под цитатой — каждая в одну строку.
-   Размер считается от ширины колонки (экран минус поля), делители
-   измерены по реальной ширине строк в этих шрифтах, с небольшим запасом. */
+/* Телефон: две фразы под цитатой — тем же размером, что и остальной текст;
+   перенос внутри строки, <br> между фразами сохраняется */
 @media (max-width:640px){
-  .story-text .lead--lines{
-    white-space:nowrap;
-    font-size:calc((100vw - 2 * max(20px, 5vw)) / 30.2);
-  }
+  .story-text .lead--lines br{ display:none; }
+  .story-text .lead--lines .line{ display:block; text-wrap:balance; }
 }
 @media (max-height:640px){ .hero__scroll{ display:none; } }
 
