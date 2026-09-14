@@ -585,15 +585,16 @@
 
       sendToSheet(data);
 
-      /* Раньше форма схлопывалась по высоте почти секунду, а поверх шла
-         плавная прокрутка: страница укорачивалась на ~900 px прямо под пальцем,
-         одновременно закрывалась клавиатура — отсюда рывки.
-         Теперь: убираем клавиатуру → форма гаснет на месте → одним кадром
-         меняем её на благодарность и ставим экран на начало блока. */
+      /* Компьютер: форма гаснет на месте → одним кадром меняется на благодарность.
+         Телефон: сначала убираем клавиатуру и гасим весь блок целиком (это делает
+         видеокарта, раскладка не трогается). Ждём, пока клавиатура доедет и экран
+         перестанет менять высоту, — и только тогда, пока блок невидим, меняем
+         форму на благодарность и ставим прокрутку. Потом блок проявляется.
+         Так прыжок высоты и прокрутки происходит «за шторкой». */
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-      box.classList.add('is-leaving');
+      box.classList.add(touch ? 'is-hiding' : 'is-leaving');
 
-      setTimeout(function () {                // таймер, а не rAF: работает и в фоновой вкладке
+      function swap() {
         if (thanks) thanks.hidden = false;
         /* кнопка календаря — только тем, кто придёт или ещё решает */
         var cal = $('#rsvpCal');
@@ -604,7 +605,24 @@
         var navH = (($('#nav') || {}).offsetHeight || 0) + 16;
         var top = box.getBoundingClientRect().top + scrollY - navH;
         window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
-      }, touch ? 420 : 320);                  // на телефоне ждём, пока уедет клавиатура
+
+        if (touch) {
+          box.offsetHeight;                   // зафиксировать новое положение до проявления
+          setTimeout(function () { box.classList.remove('is-hiding'); }, 40);
+        }
+      }
+
+      if (!touch) { setTimeout(swap, 320); return; }   // таймер, а не rAF: работает и в фоновой вкладке
+
+      /* ждём, пока клавиатура уедет: высота видимой области не менялась 150 мс,
+         но не меньше 320 мс (время угасания) и не больше 900 мс */
+      var vv = window.visualViewport, started = Date.now(), lastH = vv ? vv.height : innerHeight, stableSince = started;
+      (function wait() {
+        var h = vv ? vv.height : innerHeight, now = Date.now();
+        if (Math.abs(h - lastH) > 1) { lastH = h; stableSince = now; }
+        if ((now - started >= 320 && now - stableSince >= 150) || now - started >= 900) swap();
+        else setTimeout(wait, 50);
+      })();
     });
   })();
 

@@ -511,7 +511,10 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 .btn.is-busy{ pointer-events:none; opacity:.55; }
 
 /* ---------- 18. АНКЕТА ---------- */
-.rsvp-box{ position:relative; }
+.rsvp-box{ position:relative; transition:opacity .3s var(--ease); }
+/* телефон: весь блок гаснет и проявляется целиком, пока внутри меняется высота */
+.rsvp-box.is-hiding{ opacity:0; pointer-events:none; will-change:opacity; }
+.rsvp-box.is-hiding .rsvp-title__a,.rsvp-box.is-hiding .rsvp-title__b{ transition:none; }
 .rsvp-title{ display:grid; }
 .rsvp-title__a,.rsvp-title__b{ grid-area:1/1; transition:opacity .7s var(--ease),transform .7s var(--ease); }
 .rsvp-title__b{ opacity:0; transform:translateY(10px); }
