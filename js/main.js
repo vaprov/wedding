@@ -627,14 +627,11 @@
   })();
 
   /* ─────────── 13b. «ЗАПЛАНИРОВАТЬ» — В КАЛЕНДАРЬ УСТРОЙСТВА ─────────── */
-  /* iPhone / iPad: обычная ссылка на .ics открывает карточку события внутри
-     Safari, а событие попадает в «календарь по умолчанию», который часто скрыт.
-     Поэтому открываем приложение «Календарь» напрямую (webcal://) — оно
-     предлагает добавить отдельный календарь «Матвей & Самира», и событие сразу
-     видно. Если приложение не открылось (например, встроенный браузер
-     мессенджера не пускает такие ссылки) — через пару секунд откроем .ics.
-     Android: .ics там обычно просто скачивается — открываем Google Календарь.
-     Компьютеры: скачивается .ics и открывается в календаре системы. */
+  /* iPhone, iPad, Mac, Windows: ссылка ведёт на assets/wedding.ics — система
+     показывает карточку одного события с кнопкой «Добавить в календарь».
+     (Ссылка webcal:// открывала бы приложение сразу, но предлагает подписку
+     на целый календарь, а не одно событие, поэтому её не используем.)
+     Android: .ics там обычно просто скачивается — открываем Google Календарь. */
   (function calendar() {
     var btn = $('#addToCalendar');
     if (!btn) return;
@@ -645,35 +642,15 @@
       location: 'Англиканская церковь Святого Андрея, Вознесенский пер., 8/5, Москва',
       details:  'Сбор гостей в 11:30, венчание в 12:00.\nКарта: https://yandex.ru/maps/-/CTdBfW3r'
     };
-    var ua = navigator.userAgent;
-    var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-    var isAndroid = /android/i.test(ua);
-
     btn.addEventListener('click', function (e) {
-      if (isAndroid) {
-        e.preventDefault();
-        location.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-          '&text='     + encodeURIComponent(EVENT.title) +
-          '&dates='    + EVENT.start + '/' + EVENT.end +
-          '&ctz=Europe/Moscow' +
-          '&location=' + encodeURIComponent(EVENT.location) +
-          '&details='  + encodeURIComponent(EVENT.details);
-        return;
-      }
-      if (!isIOS || location.protocol !== 'https:') return;   // локально webcal не сработает
-
+      if (!/android/i.test(navigator.userAgent)) return;   // остальным — .ics
       e.preventDefault();
-      var ics = btn.href;                                     // абсолютный https-адрес файла
-      var left = false;
-      var onHide = function () { if (document.hidden) left = true; };
-      document.addEventListener('visibilitychange', onHide);
-      addEventListener('pagehide', onHide);
-      addEventListener('blur', function () { left = true; }, { once: true });
-      location.href = ics.replace(/^https:/, 'webcal:');
-      setTimeout(function () {
-        document.removeEventListener('visibilitychange', onHide);
-        if (!left) location.href = ics;
-      }, 2000);
+      location.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+        '&text='     + encodeURIComponent(EVENT.title) +
+        '&dates='    + EVENT.start + '/' + EVENT.end +
+        '&ctz=Europe/Moscow' +
+        '&location=' + encodeURIComponent(EVENT.location) +
+        '&details='  + encodeURIComponent(EVENT.details);
     });
   })();
 
