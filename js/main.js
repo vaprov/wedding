@@ -643,8 +643,20 @@
       location: 'Англиканская церковь Святого Андрея, Вознесенский пер., 8/5, Москва',
       details:  'Сбор гостей в 11:30, венчание в 12:00.\nКарта: https://yandex.ru/maps/-/CTdBfW3r'
     };
+    /* Встроенные браузеры мессенджеров (Telegram и подобные) не открывают
+       файл события — они его скачивают, и гость ничего не видит. Уйти из них
+       в Safari сайт не может, поэтому показываем подсказку, как это сделать.
+       Признак: iOS-браузер без «Safari» в подписи или Android-webview. */
+    var ua = navigator.userAgent;
+    var iOS = /iPhone|iPad|iPod/.test(ua);
+    var android = /android/i.test(ua);
+    var inApp = /Telegram|FBAN|FBAV|Instagram|VKAndroidApp|; wv\)/i.test(ua) ||
+                (iOS && !/Safari/.test(ua) && !window.navigator.standalone);
+    var hint = $('#calHint');
+    if (hint && inApp && !android) hint.hidden = false;
+
     btn.addEventListener('click', function (e) {
-      if (!/android/i.test(navigator.userAgent)) return;   // остальным — .ics
+      if (!android) return;                                // остальным — .ics
       e.preventDefault();
       location.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
         '&text='     + encodeURIComponent(EVENT.title) +

@@ -526,11 +526,16 @@ button{ font:inherit; color:inherit; background:none; border:0; }
 }
 .rsvp-box.is-done .rsvp-box__thanks{ opacity:1; transform:none; }
 .rsvp-box__cal{
-  display:flex; justify-content:center; margin-top:clamp(22px,3.4svh,32px);
+  display:flex; flex-direction:column; align-items:center; gap:14px; justify-content:center; margin-top:clamp(22px,3.4svh,32px);
   opacity:0; transform:translateY(10px);
   transition:opacity .8s var(--ease-soft) .6s,transform .8s var(--ease-soft) .6s;
 }
 .rsvp-box.is-done .rsvp-box__cal{ opacity:1; transform:none; }
+/* подсказка для встроенных браузеров */
+.cal-hint{
+  margin:0; max-width:34ch; text-align:center;
+  font-size:13px; line-height:1.5; color:var(--ink-soft); opacity:.85;
+}
 
 .done-mark{
   display:none; place-items:center; color:var(--olive); margin:4px auto 20px;
